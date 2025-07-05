@@ -120,6 +120,31 @@ impl DBusServers {
             let introspect = Introspect::new(to_niri, from_niri);
             dbus.conn_introspect = try_start(introspect, is_session_instance);
 
+            #[cfg(all(feature = "xdp-gnome-screencast", feature = "xdp-gnome-remote-desktop"))]
+            let remote_desktop_shared =
+                mutter_remote_desktop::shared::RemoteDesktopShared::new_arc_mutex();
+
+            #[cfg(feature = "xdp-gnome-remote-desktop")]
+            {
+                let (to_niri, from_remote_desktop) = calloop::channel::channel();
+                niri.event_loop
+                    .insert_source(from_remote_desktop, {
+                        move |event, _, state| match event {
+                            calloop::channel::Event::Msg(msg) => {
+                                state.on_remote_desktop_msg_from_dbus(msg)
+                            }
+                            calloop::channel::Event::Closed => (),
+                        }
+                    })
+                    .unwrap();
+                let remote_desktop = RemoteDesktop {
+                    to_calloop: to_niri,
+                    #[cfg(feature = "xdp-gnome-screencast")]
+                    shared: remote_desktop_shared.clone(),
+                };
+                dbus.conn_remote_desktop = try_start(remote_desktop);
+            }
+
             #[cfg(feature = "xdp-gnome-screencast")]
             {
                 let (to_niri, from_screen_cast) = calloop::channel::channel();

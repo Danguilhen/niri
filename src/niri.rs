@@ -275,8 +275,13 @@ pub struct Niri {
     /// startup, libinput will immediately send a closed event.
     pub is_lid_closed: bool,
 
+    /// Tracked libinput devices.
     pub devices: HashSet<input::Device>,
+
+    /// Tracked libinput tablet devices.
     pub tablets: HashMap<input::Device, TabletData>,
+
+    /// Tracked libinput touch devices.
     pub touch: HashSet<input::Device>,
 
     /// Output capture sessions. Kept out of the protocol state because each one needs a damage
@@ -720,6 +725,7 @@ impl KeyboardFocus {
 }
 
 pub struct State {
+    /// The backend for input events and graphical output.
     pub backend: Backend,
     pub niri: Niri,
 }
