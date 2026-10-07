@@ -142,7 +142,7 @@ impl DBusServers {
                     #[cfg(feature = "xdp-gnome-screencast")]
                     shared: remote_desktop_shared.clone(),
                 };
-                dbus.conn_remote_desktop = try_start(remote_desktop);
+                dbus.conn_remote_desktop = try_start(remote_desktop, is_session_instance);
             }
 
             #[cfg(feature = "xdp-gnome-screencast")]

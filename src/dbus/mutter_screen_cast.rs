@@ -4,11 +4,12 @@ use std::sync::{Arc, Mutex as StdMutex};
 
 use futures_util::lock::Mutex;
 use serde::Deserialize;
+use zbus::fdo::RequestNameFlags;
 use zbus::object_server::{InterfaceRef, SignalEmitter};
 use zbus::zvariant::{DeserializeDict, OwnedObjectPath, SerializeDict, Type, Value};
 use zbus::{fdo, interface, ObjectServer};
 
-use super::{request_name, Start};
+use super::Start;
 use crate::backend::IpcOutputMap;
 #[cfg(feature = "xdp-gnome-remote-desktop")]
 use crate::dbus::mutter_remote_desktop::shared::RemoteDesktopShared;
@@ -188,7 +189,7 @@ impl ScreenCast {
 }
 
 impl Start for ScreenCast {
-    fn start(self) -> anyhow::Result<zbus::blocking::Connection> {
+    fn start(self, _monitor: bool) -> anyhow::Result<zbus::blocking::Connection> {
         let conn = zbus::blocking::Connection::session()?;
         let flags = RequestNameFlags::AllowReplacement
             | RequestNameFlags::ReplaceExisting
@@ -469,76 +470,6 @@ impl Session {
         }
 
         Ok(path)
-    }
-
-    #[zbus(signal)]
-    async fn closed(ctxt: &SignalEmitter<'_>) -> zbus::Result<()>;
-}
-
-#[interface(name = "org.gnome.Mutter.ScreenCast.Stream")]
-impl Stream {
-    #[zbus(signal)]
-    pub async fn pipe_wire_stream_added(ctxt: &SignalEmitter<'_>, node_id: u32)
-        -> zbus::Result<()>;
-
-    #[zbus(property)]
-    async fn parameters(&self) -> StreamParameters {
-        match &self.target {
-            StreamTarget::Output(output) => {
-                let logical = output.logical.as_ref().unwrap();
-                StreamParameters {
-                    position: (logical.x, logical.y),
-                    size: (logical.width as i32, logical.height as i32),
-                }
-            }
-            StreamTarget::Window { .. } => {
-                // Does any consumer need this?
-                StreamParameters {
-                    position: (0, 0),
-                    size: (1, 1),
-                }
-            }
-        }
-    }
-}
-
-impl ScreenCast {
-    pub fn new(
-        ipc_outputs: Arc<Mutex<IpcOutputMap>>,
-        to_niri: calloop::channel::Sender<ScreenCastToNiri>,
-    ) -> Self {
-        Self {
-            ipc_outputs,
-            to_niri,
-            sessions: Arc::new(Mutex::new(vec![])),
-        }
-    }
-}
-
-impl Start for ScreenCast {
-    fn start(self, monitor: bool) -> anyhow::Result<zbus::blocking::Connection> {
-        let conn = zbus::blocking::Connection::session()?;
-        conn.object_server()
-            .at("/org/gnome/Mutter/ScreenCast", self)?;
-        request_name(&conn, "org.gnome.Mutter.ScreenCast", monitor)?;
-
-        Ok(conn)
-    }
-}
-
-impl Session {
-    pub fn new(
-        id: CastSessionId,
-        ipc_outputs: Arc<Mutex<IpcOutputMap>>,
-        to_niri: calloop::channel::Sender<ScreenCastToNiri>,
-    ) -> Self {
-        Self {
-            id,
-            ipc_outputs,
-            streams: Arc::new(Mutex::new(vec![])),
-            to_niri,
-            stopped: Arc::new(AtomicBool::new(false)),
-        }
     }
 }
 

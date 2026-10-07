@@ -88,7 +88,7 @@ pub(super) struct RemoteDesktop {
 }
 
 impl Start for RemoteDesktop {
-    fn start(self) -> anyhow::Result<zbus::blocking::Connection> {
+    fn start(self, _monitor: bool) -> anyhow::Result<zbus::blocking::Connection> {
         let conn = zbus::blocking::Connection::session()?;
         let flags = RequestNameFlags::AllowReplacement
             | RequestNameFlags::ReplaceExisting
