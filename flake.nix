@@ -32,6 +32,7 @@
           withDbus ? true,
           withSystemd ? true,
           withScreencastSupport ? true,
+          withRemoteDesktopSupport ? withScreencastSupport,
           withDinit ? false,
         }:
 
@@ -95,6 +96,7 @@
             lib.optional withDbus "dbus"
             ++ lib.optional withDinit "dinit"
             ++ lib.optional withScreencastSupport "xdp-gnome-screencast"
+            ++ lib.optional withRemoteDesktopSupport "xdp-gnome-remote-desktop"
             ++ lib.optional withSystemd "systemd";
           buildNoDefaultFeatures = true;
 
@@ -219,7 +221,8 @@
       packages = forAllSystems (
         system:
         let
-          niri = nixpkgsFor.${system}.callPackage niri-package { };
+          pkgs = nixpkgsFor.${system};
+          niri = pkgs.callPackage niri-package { };
         in
         {
           inherit niri;

@@ -293,6 +293,27 @@ impl Session {
     ) -> fdo::Result<OwnedObjectPath> {
         debug!(connector, ?properties, "record_monitor");
 
+        let true_connector;
+        let connector = if connector.is_empty() {
+            // Mutter replaces connector="" with the primary monitor.
+            true_connector = {
+                let ipc_outputs = self.ipc_outputs.lock().unwrap();
+                ipc_outputs
+                    .values()
+                    .find(|o| o.logical.is_some())
+                    .map(|o| o.name.clone())
+            };
+            match &true_connector {
+                Some(name) => {
+                    debug!("record_monitor: using primary connector {name} for empty connector");
+                    name.as_str()
+                }
+                None => connector,
+            }
+        } else {
+            connector
+        };
+
         let output = {
             let ipc_outputs = self.ipc_outputs.lock().unwrap();
             ipc_outputs.values().find(|o| o.name == connector).cloned()
