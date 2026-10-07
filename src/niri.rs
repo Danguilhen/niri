@@ -174,6 +174,8 @@ use crate::render_helpers::{
 };
 #[cfg(feature = "xdp-gnome-screencast")]
 use crate::screencasting::Screencasting;
+#[cfg(feature = "xdp-gnome-remote-desktop")]
+use crate::remote_desktop::RemoteDesktopState;
 use crate::ui::config_error_notification::ConfigErrorNotification;
 use crate::ui::exit_confirm_dialog::{ExitConfirmDialog, ExitConfirmDialogRenderElement};
 use crate::ui::hotkey_overlay::HotkeyOverlay;
@@ -440,6 +442,9 @@ pub struct Niri {
 
     #[cfg(feature = "xdp-gnome-screencast")]
     pub casting: Screencasting,
+
+    #[cfg(feature = "xdp-gnome-remote-desktop")]
+    pub remote_desktop: RemoteDesktopState,
 
     #[cfg(test)]
     pub test_action_count: usize,
@@ -2788,6 +2793,9 @@ impl Niri {
 
             #[cfg(feature = "xdp-gnome-screencast")]
             casting: screencasting,
+
+            #[cfg(feature = "xdp-gnome-remote-desktop")]
+            remote_desktop: RemoteDesktopState::default(),
 
             #[cfg(test)]
             test_action_count: 0,

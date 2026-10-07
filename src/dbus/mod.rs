@@ -22,6 +22,11 @@ pub mod mutter_screen_cast;
 #[cfg(feature = "xdp-gnome-screencast")]
 use mutter_screen_cast::ScreenCast;
 
+#[cfg(feature = "xdp-gnome-remote-desktop")]
+pub mod mutter_remote_desktop;
+#[cfg(feature = "xdp-gnome-remote-desktop")]
+use mutter_remote_desktop::RemoteDesktop;
+
 use self::freedesktop_screensaver::ScreenSaver;
 use self::gnome_shell_introspect::Introspect;
 use self::mutter_display_config::DisplayConfig;
@@ -43,6 +48,8 @@ pub struct DBusServers {
     pub conn_login1: Option<Connection>,
     pub conn_locale1: Option<Connection>,
     pub conn_a11y_manager: Option<Connection>,
+    #[cfg(feature = "xdp-gnome-remote-desktop")]
+    pub conn_remote_desktop: Option<Connection>,
 }
 
 impl DBusServers {
@@ -156,7 +163,7 @@ impl DBusServers {
                         }
                     })
                     .unwrap();
-                let screen_cast = ScreenCast::new(backend.ipc_outputs(), to_niri);
+                let screen_cast = ScreenCast::new(backend.ipc_outputs(), to_niri, remote_desktop_shared, dbus.conn_remote_desktop.as_ref().map(|conn| conn.object_server().inner().clone()));
                 dbus.conn_screen_cast = try_start(screen_cast, is_session_instance);
             }
 

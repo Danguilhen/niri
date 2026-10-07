@@ -56,6 +56,10 @@ use crate::utils::spawning::{spawn, spawn_sh};
 use crate::utils::{center, get_monotonic_time, CastSessionId, ResizeEdge};
 
 pub mod backend_ext;
+#[cfg(feature = "xdp-gnome-remote-desktop")]
+pub mod dbus_remote_desktop_backend;
+#[cfg(feature = "xdp-gnome-remote-desktop")]
+pub mod eis_backend;
 pub mod click_grab;
 pub mod move_grab;
 pub mod pick_color_grab;

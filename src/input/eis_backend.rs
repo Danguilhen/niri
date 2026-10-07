@@ -6,7 +6,7 @@ use smithay::backend::input::{
     DeviceCapability, Event, InputBackend, KeyState, KeyboardKeyEvent, Keycode, PointerAxisEvent,
     PointerButtonEvent, PointerMotionAbsoluteEvent, PointerMotionEvent, TouchCancelEvent,
     TouchDownEvent, TouchEvent, TouchFrameEvent, TouchMotionEvent, TouchSlot, TouchUpEvent,
-    UnusedEvent,
+    InputTime, UnusedEvent,
 };
 use smithay::output::Output;
 use smithay::utils::{Logical, Rectangle};
@@ -107,8 +107,8 @@ pub struct EisEventAdapter<Ev, Extra = ()> {
 }
 
 impl<Ev: reis::request::EventTime, Extra> Event<EisInputBackend> for EisEventAdapter<Ev, Extra> {
-    fn time(&self) -> u64 {
-        self.inner.time()
+    fn time(&self) -> InputTime {
+        InputTime::from_millis(self.inner.time() as u32)
     }
 
     fn device(&self) -> <EisInputBackend as InputBackend>::Device {

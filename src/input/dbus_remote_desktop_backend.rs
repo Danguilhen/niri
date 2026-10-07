@@ -6,6 +6,7 @@ use smithay::backend::input::{
     DeviceCapability, Event, InputBackend, KeyState, KeyboardKeyEvent, Keycode, PointerAxisEvent,
     PointerButtonEvent, PointerMotionAbsoluteEvent, PointerMotionEvent, TouchCancelEvent,
     TouchDownEvent, TouchEvent, TouchFrameEvent, TouchMotionEvent, TouchUpEvent, UnusedEvent,
+    InputTime,
 };
 use smithay::output::Output;
 use smithay::utils::Point;
@@ -100,8 +101,8 @@ pub struct RdEventAdapter<Ev> {
 }
 
 impl<Ev> Event<RdInputBackend> for RdEventAdapter<Ev> {
-    fn time(&self) -> u64 {
-        self.time
+    fn time(&self) -> InputTime {
+        InputTime::from_millis(self.time as u32)
     }
 
     fn device(&self) -> <RdInputBackend as InputBackend>::Device {
